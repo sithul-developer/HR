@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#007B5F">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Auto Report AI">
+    <meta name="mobile-web-app-capable" content="yes">
+    <title>Auto Report AI</title>
+    <style>
+        :root {
+            --brand-green:        #007B5F;
+            --brand-green-dark:   #005E48;
+            --brand-green-light:  #1A9B7C;
+            --brand-green-soft:   #E3F2ED;
+            --bg:                 #F4F8F6;
+            --border:             #DCE8E3;
+            --ptms-primary:       #007B5F;
+            --bg-page:            #F4F8F6;
+            --bg-surface:         #FFFFFF;
+            --border-soft:        #DCE8E3;
+            --text-primary:       #0F3D31;
+            --text-secondary:     #4A7A6B;
+            --text-muted:         #8AA79C;
+            --brand-gradient:     linear-gradient(135deg, #007B5F 0%, #1A9B7C 100%);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: var(--bg-page);
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .fullscreen-wrapper {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-page);
+        }
+
+        .fullscreen-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .fullscreen-iframe.loaded {
+            opacity: 1;
+        }
+
+        /* =========================================
+           BOOT LOADER
+           ========================================= */
+        #bootLoader {
+            position: fixed; inset: 0; background: var(--bg); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.3s ease;
+        }
+        #bootLoader.hidden { opacity: 0; pointer-events: none; }
+        .boot-spinner {
+            width: 40px; height: 40px;
+            border: 3px solid var(--border);
+            border-top-color: var(--ptms-primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Status text with animated dots */
+        .boot-status {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            display: inline-flex;
+            align-items: baseline;
+        }
+        .boot-status .dots::after {
+            content: '';
+            display: inline-block;
+            width: 1.2em;
+            text-align: left;
+            animation: dots 1.6s steps(4, end) infinite;
+        }
+        @keyframes dots {
+            0%   { content: ''; }
+            25%  { content: '.'; }
+            50%  { content: '..'; }
+            75%  { content: '...'; }
+            100% { content: ''; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .boot-spinner,
+            .boot-status .dots::after {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fullscreen-wrapper">
+        <iframe
+            id="surveyFrame"
+            class="fullscreen-iframe"
+            src="https://script.google.com/macros/s/AKfycbxIA6c68sIF_b_fpiuzaUc-IWn4q2Joq9hdDHVvk2tp8opGfkO7N4XCT5vm3Z5Zvsbu4Q/exec"
+            allow="geolocation; camera; microphone; fullscreen"
+            allowfullscreen
+            referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+    </div>
+
+    <!-- Boot loader overlay -->
+    <div id="bootLoader" role="status" aria-live="polite" aria-label="Loading application">
+        <div class="boot-spinner"></div>
+        <div class="boot-status">
+            <span>Authenticating</span>
+            <span class="dots"></span>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const frame = document.getElementById('surveyFrame');
+            const bootLoader = document.getElementById('bootLoader');
+
+            let hidden = false;
+            function hideLoader() {
+                if (hidden) return;
+                hidden = true;
+                bootLoader.classList.add('hidden');
+                frame.classList.add('loaded');
+                setTimeout(() => bootLoader.remove(), 400);
+            }
+
+            // Show iframe only once it's fully loaded
+            frame.addEventListener('load', hideLoader);
+
+            // Safety fallback — hide loader after 8 seconds max
+            const fallbackTimer = setTimeout(hideLoader, 8000);
+            frame.addEventListener('load', () => clearTimeout(fallbackTimer));
+        })();
+    </script>
+
+</body>
+</html>
